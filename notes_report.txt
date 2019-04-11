@@ -1,0 +1,16 @@
+Linear (2 models)
+	2 different architectures
+	not so good
+Naive convnet (1 model)
+	better, but use knowledge of the task (2 images)
+	- siamese architecture (not necessarily weight sharing)
+Convnet (5 models)
+	best, test different training schemes
+	- WS & AL (4 models)
+	- 2 step transfer learning (using weight sharing) (1 model)
+
+
+comment on: 
+- differences
+- convnets inspired by LeNet
+- overfitting-> makes no sense to go deeper in convnets	
