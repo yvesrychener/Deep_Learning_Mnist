@@ -4,11 +4,16 @@
 # +-----------------------------------------------------------------------+
 
 import convnets_siamese
+import MLP
+import convnet
 
 def run_all():
     '''
     Run all the networks
     '''
+    _,_ = MLP.eval_MLP(deep=False)
+    _,_ = MLP.eval_MLP(deep=True)
+    _,_ = convnet.eval_convnet()
     _,_ = convnets_siamese.eval_transfer_learning()
     _,_ = convnets_siamese.eval_WS_no_AL()
     _,_ = convnets_siamese.eval_WS_AL()
