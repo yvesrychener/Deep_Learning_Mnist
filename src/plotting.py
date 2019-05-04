@@ -29,6 +29,10 @@ def plot_result(eval_f, n_repe, title):
     train_std = np.array(train_e).std(0)
     test_std = np.array(test_e).std(0)
     
+    # print final average train and test errors
+    print('Final average train error: {}%'.format(train_mean[-1]/10))
+    print('Final average test error: {}%'.format(test_mean[-1]/10))
+
     # plotting
     plt.subplot(1,2,1)
     plt.plot(train_mean)
@@ -44,10 +48,10 @@ def plot_result(eval_f, n_repe, title):
     ub = test_mean + 1.96 * test_std
     lb = test_mean - 1.96 * test_std
     plt.fill_between(range(test_mean.shape[0]), ub, lb, alpha=0.5)
-    plt.title('Training Error')
+    plt.title('Test Error')
     plt.xlabel('Iteration')
     plt.ylabel('Error (out of 1000)')
     
     plt.suptitle(title)
-    return
+    return train_mean, test_mean, train_std, test_std
    

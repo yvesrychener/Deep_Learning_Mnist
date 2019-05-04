@@ -93,7 +93,7 @@ class MLP_shallow(nn.Module):
 
 
 class MLP_deep(nn.Module):
-    """Neural Network definition, deep Multi Layer Perceptron (5 hidden layers)"""
+    """Neural Network definition, deep Multi Layer Perceptron (4 hidden layers)"""
     def __init__(self):
         super(MLP_deep, self).__init__()
         self.l1 = nn.Linear(392, 470)  
