@@ -3,9 +3,9 @@
 # | This module implements test of the networks                           |
 # +-----------------------------------------------------------------------+
 
-import convnets_siamese
-import MLP
-import convnet
+import src.MLP as MLP
+import src.convnet as convnet
+import src.convnets_siamese as convnets_siamese
 
 def run_all():
     '''
