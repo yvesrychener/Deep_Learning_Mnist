@@ -12,7 +12,7 @@ from torch import nn
 from torch import optim
 from torch.nn import functional as F
 from torch.autograd import Variable     # really necessary??
-import src.dlc_practical_prologue as prologue
+import dlc_practical_prologue as prologue
 
 # ----------------
 # Helper functions

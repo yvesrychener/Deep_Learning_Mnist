@@ -13,7 +13,7 @@ from torch import Tensor
 from torch import nn
 from torch import optim
 from torch.nn import functional as F
-import src.dlc_practical_prologue as prologue
+import dlc_practical_prologue as prologue
 
 
 # ----------------

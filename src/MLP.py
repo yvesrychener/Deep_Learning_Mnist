@@ -13,7 +13,7 @@ from torch import Tensor
 from torch import nn
 from torch import optim
 from torch.nn import functional as F
-import src.dlc_practical_prologue as prologue
+import dlc_practical_prologue as prologue
 
 # layer width was based on the same rule for both shallow and deep networks:
 # at each layer, the width was increased by 20% and rounded to the next integer value
