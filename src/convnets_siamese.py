@@ -11,15 +11,24 @@ from torch import Tensor
 from torch import nn
 from torch import optim
 from torch.nn import functional as F
-from torch.autograd import Variable     # really necessary??
 import dlc_practical_prologue as prologue
 
 # ----------------
 # Helper functions
 # ----------------
 
-# Compute number of Errors (for models without auxilary loss)
+# Compute number of Errors (for models without auxiliary loss)
 def compute_nb_errors(model, data_input, data_target, minibatch_size):
+    '''
+    Compute the number of errors of a given model without auxiliary loss 
+    Params:
+    model    	    : trained model used for prediction
+    data_input      : the input data for the model
+    data_target     : the target data (ground truth)
+    minibatch_size  : the size of all minibatches
+    Returns:
+    nb_data_errors : the number of errors for the given dataset
+    '''
     nb_data_errors = 0
     for b in range(0, data_input.size(0), minibatch_size):
         out = model(data_input.narrow(0, b, minibatch_size))
@@ -29,11 +38,22 @@ def compute_nb_errors(model, data_input, data_target, minibatch_size):
                 nb_data_errors += 1
     return nb_data_errors
 
-# Compute number of Errors (for models with auxilary loss)
+# Compute number of Errors (for models with auxiliary loss)
 def compute_nb_errors_aux(model, data_input, data_target, minibatch_size):
+    '''
+    Compute the number of errors of a given model with auxiliary loss 
+    Params:
+    model    	    : trained model used for prediction
+    data_input      : the input data for the model
+    data_target     : the target data (ground truth)
+    minibatch_size  : the size of all minibatches
+    Returns:
+    nb_data_errors : the number of errors for the given dataset
+    '''
     nb_data_errors = 0
     for b in range(0, data_input.size(0), minibatch_size):
         out = model(data_input.narrow(0, b, minibatch_size))
+        # AL --> out has now structure [x, n1, n2], want to access only x (the actual prediction)
         _, pred = torch.max(out[0].data, 1)
         for k in range(minibatch_size):
             if data_target[b+k] != pred[k]:
@@ -42,6 +62,22 @@ def compute_nb_errors_aux(model, data_input, data_target, minibatch_size):
 
 # Train model with training and test path returned (for models without auxilary loss)
 def train_model_path(model, criterion, optimizer, nb_epochs, minibatch_size, train_X, train_Y, test_X, test_Y, verbose=False):
+    '''
+    Train the model and return the error path
+    Params:
+    model 	        : defined network
+    criterion       : loss function (e.g. MSE)
+    optimizer       : type of optimization function (e.g. SGD)
+    np_epochs       : number of epochs to train the model
+    minibatch_size  : size of each minibatch
+    train_X         : train input data
+    train_Y         : train target data
+    test_X          : test input data
+    test_Y          : test target data
+    verbose         : verbosity of training routine
+    Returns:
+    model, train_error, test_error : the trained model and the error path of the train and test set
+    '''    
     train_error = []
     test_error = []
     for e in range(nb_epochs):
@@ -58,19 +94,44 @@ def train_model_path(model, criterion, optimizer, nb_epochs, minibatch_size, tra
 
 # Train model with training and test path returned (for models with auxilary loss)
 def train_model_path_aux(model, criterion, optimizer, nb_epochs, minibatch_size, train_X, train_Y, train_class, test_X, test_Y, use_al = True, verbose=False):
+    '''
+    Train the model with possibility of auxiliary loss and return the error path
+    Params:
+    model 	        : defined network
+    criterion       : loss function (e.g. MSE)
+    optimizer       : type of optimization function (e.g. SGD)
+    np_epochs       : number of epochs to train the model
+    minibatch_size  : size of each minibatch
+    train_X         : train input data
+    train_Y         : train target data
+    train_class     : train target classes
+    test_X          : test input data
+    test_Y          : test target data
+    use_al          : bool to handle auxiliary loss
+    verbose         : verbosity of training routine
+    Returns:
+    model, train_error, test_error : the trained model and the error path of the train and test set
+    '''    
     train_error = []
     test_error = []
+    # if use_al = False: silence the auxiliary loss
     if not use_al:
         beta = 0
     for e in range(nb_epochs):
+        # update the current weighting factor of the two losses (goes from 1 to 0 over the epochs)
         if use_al:
             beta = (nb_epochs - e)/nb_epochs
+        # iterate over the minibatches
         for b in range(0, train_X.size(0), minibatch_size):
+            # out = [x, n1, n2]
             out = model(train_X.narrow(0, b, minibatch_size))
+            # target loss requires to compare x to the target values in train_Y
             loss = criterion(out[0], train_Y.narrow(0, b, minibatch_size))
+            # auxiliary loss compares for each of the two images the class prediction n1 and n2 to the target class
             aux_loss = criterion(out[1], train_class[:,0].narrow(0, b, minibatch_size)) + \
                             criterion(out[2], train_class[:,1].narrow(0, b, minibatch_size))
             model.zero_grad()
+            # backpropagate the combined loss
             ((1 - beta)*loss + beta*aux_loss).backward()
             optimizer.step()
         train_error.append(compute_nb_errors_aux(model, train_X, train_Y, minibatch_size))
@@ -136,8 +197,7 @@ class siamese_Net(nn.Module):
         # combining them again
         x = F.relu(self.fc3(torch.cat((x1.view(-1,100), x2.view(-1, 100)), 1)))
         x = self.fc4(x)
-        
-
+        # predict digit class of image 1 and image 2
         n1 = self.fc2(x1)
         n2 = self.fc2(x2)
         return [x, n1, n2]
@@ -172,7 +232,7 @@ class siamese_Net_no_WS(nn.Module):
         # combining them
         x = F.relu(self.fc3(torch.cat((x1.view(-1,100), x2.view(-1, 100)), 1)))
         x = self.fc4(x)
-        
+        # predict digit class of image 1 and image 2
         n1 = self.fc2a(x1)
         n2 = self.fc2b(x2)
         return [x, n1, n2]

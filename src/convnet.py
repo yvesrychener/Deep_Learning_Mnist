@@ -22,9 +22,27 @@ import dlc_practical_prologue as prologue
 
 # Train model with training and test path returned
 def train_model_path(model, criterion, optimizer, nb_epochs, minibatch_size, train_X, train_Y, test_X, test_Y, verbose=False):
+    '''
+    Train the model and return the error path
+    Params:
+    model 	        : defined network
+    criterion       : loss function (e.g. MSE)
+    optimizer       : type of optimization function (e.g. SGD)
+    np_epochs       : number of epochs to train the model
+    minibatch_size  : size of each minibatch
+    train_X         : train input data
+    train_Y         : train target data
+    test_X          : test input data
+    test_Y          : test target data
+    verbose         : verbosity of training routine
+    Returns:
+    model, train_error, test_error : the trained model and the error path of the train and test set
+    '''    
     train_error = []
     test_error = []
+    # iterate over the epochs
     for e in range(nb_epochs):
+        # iterate over the mini-batches
         for b in range(0, train_X.size(0), minibatch_size):
             out = model(train_X.narrow(0, b, minibatch_size))
             loss = criterion(out, train_Y.narrow(0, b, minibatch_size))
@@ -38,11 +56,22 @@ def train_model_path(model, criterion, optimizer, nb_epochs, minibatch_size, tra
 
 # Compute number of Errors
 def compute_nb_errors(model, data_input, data_target, minibatch_size):
+    '''
+    Compute the number of errors of a given model 
+    Params:
+    model    	    : trained model used for prediction
+    data_input      : the input data for the model
+    data_target     : the target data (ground truth)
+    minibatch_size  : the size of all minibatches
+    Returns:
+    nb_data_errors : the number of errors for the given dataset
+    '''
     nb_data_errors = 0
     for b in range(0, data_input.size(0), minibatch_size):
         out = model(data_input.narrow(0, b, minibatch_size))
         # compares the outputted values for the two channels and gives back the argmax (in pred)
         _, pred = torch.max(out.data, 1)
+        # calculate the number of errors in a given mini-batch
         for k in range(minibatch_size):
             if data_target[b+k] != pred[k]:
                 nb_data_errors += 1
